@@ -7,11 +7,11 @@ namespace Texto.Sender.Function
 {
     public static class SenderFunction
     {
-        private static readonly TextoClient textoClient;
+        private static readonly TextoClient TextoClient;
 
         static SenderFunction()
         {
-            textoClient = new TextoClient();
+            TextoClient = new TextoClient();
         }
 
         [FunctionName("SenderFunction")]
@@ -19,7 +19,7 @@ namespace Texto.Sender.Function
         {
             log.Info($"C# ServiceBus queue trigger function processed message: {queueItem}");
 
-            await textoClient.Send(ConvertToTextMessage(queueItem));
+            await TextoClient.Send(ConvertToTextMessage(queueItem));
         }
 
         private static TextMessage ConvertToTextMessage(string item)

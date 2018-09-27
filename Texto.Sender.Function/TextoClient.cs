@@ -8,18 +8,18 @@ namespace Texto.Sender.Function
 {
     public class TextoClient
     {
-        private readonly HttpClient client;
-        private string token;
+        private readonly HttpClient _client;
+        private string _token;
 
         public TextoClient()
         {
-            client = new HttpClient();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _client = new HttpClient();
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         public async Task Send(TextMessage textMessage)
         {
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(_token))
             {
                 await GetToken();
             }
@@ -31,25 +31,27 @@ namespace Texto.Sender.Function
                 Message = textMessage.Body
             };
 
-            client.DefaultRequestHeaders.Clear();
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            _client.DefaultRequestHeaders.Clear();
+            _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_token}");
 
-            await client.PostAsJsonAsync($"{Settings.TextoApiUri}/api/text/Send", queryObject);
+            await _client.PostAsJsonAsync($"{Settings.TextoApiUri}/api/text/send", queryObject);
         }
 
         private async Task GetToken()
         {
             var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
-                {"clientId", Settings.TextoClientId},
-                {"clientSecret", Settings.TextoClientSecret },
-                {"identifier", Settings.TextoClientIdentifier }
+                {"clientId", Settings.ClientId},
+                {"clientSecret", Settings.ClientSecret },
+                {"grant_type", "client_credentials" }
             });
 
-            var response = await client.PostAsync($"{Settings.TextoApiUri}/api/text/token", content);
+            var response = await _client.PostAsync($"{Settings.SkybotAuthUri}/connect/token", content);
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            token = JsonConvert.DeserializeObject<string>(responseContent);
+            var deserializedResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
+
+            _token = deserializedResponse.access_token;
         }
     }
 }
